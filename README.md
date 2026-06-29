@@ -4,6 +4,14 @@ En mobilanpassad webbapp (PWA) som visar tågavgångar i realtid från Trafikver
 
 Byggd för att läggas till på hemskärmen och fungerar då som en app, inklusive push-notiser på iPhone.
 
+## Snabbåtkomst
+
+Skanna QR-koden med mobilkameran för att öppna appen:
+
+![QR-kod till Tågtavlan](tagtavlan-qr.png)
+
+`https://im4fun.github.io/tagtavlan/`
+
 ## Funktioner
 
 - **Avgångstavla** med realtidsdata: tid, tågnummer, spår och destination.
