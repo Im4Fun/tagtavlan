@@ -1,10 +1,6 @@
-// =====================================================================
-//  TÅGTAVLAN – klientlogik
-// =====================================================================
 const CFG = window.TT_CONFIG;
 const FN = (name) => `${CFG.SUPABASE_URL}/functions/v1/${name}`;
 
-// Anropar en Edge Function. anon-nyckeln krävs av Supabase-gatewayen.
 async function call(fn, payload) {
   const res = await fetch(FN(fn), {
     method: "POST",
@@ -19,7 +15,6 @@ async function call(fn, payload) {
   return data;
 }
 
-// Enkel state, mestadels i minnet. deviceId + val sparas lokalt.
 const State = {
   from: null,   // {signature, name}
   to: null,
@@ -285,7 +280,6 @@ const App = {
     this.setTheme(localStorage.getItem("tt_theme") || "");
     this.setupSearch("fromInput", "fromSug", "from");
     this.setupSearch("toInput", "toSug", "to");
-    // Förladda bevakningar så att klock-ikoner stämmer
     if (State.deviceId) {
       call("subscribe", { action: "getState", deviceId: State.deviceId })
         .then(({ watches }) => { State.watches = watches; })
