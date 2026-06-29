@@ -1,91 +1,91 @@
 # Tågtavlan
 
-En mobilanpassad webbapp (PWA) som visar tågavgångar i realtid från Trafikverkets öppna API, med möjlighet att bevaka enskilda avgångar och få push-notiser vid avvikelser samt en påminnelse när det är dags att gå till perrongen.
+A mobile-friendly web app (PWA) that shows live train departures from Trafikverket's open API, with the ability to watch individual departures and receive push notifications for disruptions plus a reminder when it's time to head to the platform.
 
-Byggd för att läggas till på hemskärmen och fungerar då som en app, inklusive push-notiser på iPhone.
+Built to be added to the home screen, where it behaves like a native app, including push notifications on iPhone.
 
-## Funktioner
+## Features
 
-- **Avgångstavla** med realtidsdata: tid, tågnummer, spår och destination.
-- **Stationssök** mot Trafikverkets stationsregister, med valfritt destinationsfilter (visa t.ex. bara tåg från Stockholm C mot Uppsala).
-- **Förseningar och inställda tåg** visas tydligt med överstruken tidtabellstid, ny beräknad tid och statusmärke.
-- **Bevakning av enskilda avgångar** med två typer av notiser:
-  - *Avvikelser* – försening, spårändring eller inställt tåg.
-  - *Perrong-påminnelse* – en notis ett valbart antal minuter före avgång, beräknad mot den aktuella (eventuellt försenade) tiden, med spårnummer.
-- **Tre teman** – mörkt, dimmigt och ljust. Valet sparas lokalt.
-- **PWA** – läggs till på hemskärmen, fungerar offline-tolerant och tar emot push.
+- **Departure board** with live data: time, train number, track, and destination.
+- **Station search** against Trafikverket's station registry, with an optional destination filter (e.g. show only trains from Stockholm C towards Uppsala).
+- **Delays and cancellations** shown clearly with struck-through scheduled time, new estimated time, and a status badge.
+- **Watch individual departures** with two types of notifications:
+  - *Disruptions* – delay, track change, or cancellation.
+  - *Platform reminder* – a notification a configurable number of minutes before departure, calculated against the current (possibly delayed) time, including the track number.
+- **Three themes** – dark, dim, and light. The choice is saved locally.
+- **PWA** – added to the home screen, offline-tolerant, and receives push.
 
-## Arkitektur
+## Architecture
 
 ```
-   Mobil-app (hemskärm)
+   Mobile app (home screen)
           │
-          │  anrop med anon-nyckel
+          │  request with anon key
           ▼
    Supabase Edge Functions
-   • proxy      – live-frågor mot Trafikverket (döljer API-nyckeln)
-   • subscribe  – enheter, bevakningar och favoriter
-   • watcher    – cron-jobb som upptäcker avvikelser och skickar push
+   • proxy      – live queries to Trafikverket (hides the API key)
+   • subscribe  – devices, watches, and favorites
+   • watcher    – cron job that detects disruptions and sends push
           │                    │
           ▼                    ▼
-   Trafikverkets API      Web Push (VAPID) → mobilernas notiser
+   Trafikverket API      Web Push (VAPID) → device notifications
 ```
 
-- **Frontend** (det här repot): statiska filer på GitHub Pages.
-- **Backend**: Supabase (Postgres + Edge Functions). API-nyckel och VAPID-privata nyckeln ligger som secrets i Supabase och exponeras aldrig i klienten.
-- **Notiser**: standard Web Push med VAPID, krypterat enligt aes128gcm. Inga tredjepartstjänster.
+- **Frontend** (this repo): static files on GitHub Pages.
+- **Backend**: Supabase (Postgres + Edge Functions). The API key and the VAPID private key live as secrets in Supabase and are never exposed in the client.
+- **Notifications**: standard Web Push with VAPID, encrypted using aes128gcm. No third-party services.
 
-## Filer i repot
+## Files in this repo
 
-| Fil | Roll |
-|-----|------|
-| `index.html` | Gränssnitt och all CSS |
-| `app.js` | Klientlogik: sök, avgångstavla, bevakning, push |
-| `config.js` | Tre klientvärden: Supabase-URL, anon-nyckel, VAPID public key |
-| `sw.js` | Service worker som tar emot push och visar notiser |
-| `manifest.json` | PWA-manifest |
-| `icon-192.png`, `icon-512.png` | App-ikoner |
+| File | Role |
+|------|------|
+| `index.html` | Interface and all CSS |
+| `app.js` | Client logic: search, departure board, watching, push |
+| `config.js` | Three client values: Supabase URL, anon key, VAPID public key |
+| `sw.js` | Service worker that receives push and shows notifications |
+| `manifest.json` | PWA manifest |
+| `icon-192.png`, `icon-512.png` | App icons |
 
-Backend-koden (databasschema och Edge Functions) ligger utanför det här repot eftersom den distribueras direkt till Supabase.
+The backend code (database schema and Edge Functions) lives outside this repo since it is deployed directly to Supabase.
 
-## Konfiguration
+## Configuration
 
-Fyll i `config.js` med dina egna värden:
+Fill in `config.js` with your own values:
 
 ```js
 window.TT_CONFIG = {
-  SUPABASE_URL: "https://ditt-projekt.supabase.co",
-  SUPABASE_ANON_KEY: "din-anon-nyckel",
-  VAPID_PUBLIC_KEY: "din-vapid-public-key",
+  SUPABASE_URL: "https://your-project.supabase.co",
+  SUPABASE_ANON_KEY: "your-anon-key",
+  VAPID_PUBLIC_KEY: "your-vapid-public-key",
 };
 ```
 
-Samtliga tre är avsedda att ligga i klienten. Hemligheter (Trafikverket-nyckel, VAPID private key, service role-nyckel) hör hemma som secrets i Supabase, aldrig i repot.
+All three are meant to live in the client. Secrets (Trafikverket key, VAPID private key, service role key) belong as secrets in Supabase, never in the repo.
 
-> **Notis om VAPID:** public key i `config.js` måste vara paret till private key som ligger som secret i Supabase. Om nyckelparet byts ut måste varje enhet registrera om sina notiser.
+> **Note on VAPID:** the public key in `config.js` must be the pair to the private key stored as a secret in Supabase. If the key pair is replaced, every device must re-register for notifications.
 
-## Lägg till på hemskärmen (krävs för notiser på iPhone)
+## Add to the home screen (required for notifications on iPhone)
 
-1. Öppna appens URL i **Safari** på iPhone.
-2. Dela-ikonen → **Lägg till på hemskärmen**.
-3. Öppna appen från hemskärms-ikonen (inte Safari-fliken).
-4. I appen: **Inställningar → Aktivera push-notiser** → tillåt.
+1. Open the app's URL in **Safari** on iPhone.
+2. Share icon → **Add to Home Screen**.
+3. Open the app from the home screen icon (not the Safari tab).
+4. In the app: **Settings → Enable push notifications** → allow.
 
-Varje enhet registreras separat och får sina egna notiser.
+Each device registers separately and receives its own notifications.
 
-## Uppdatera appen
+## Updating the app
 
-- **Frontend** (filerna i det här repot): ladda upp ändrade filer till GitHub. Eftersom en service worker cachar filerna kan en hård omladdning behövas på enheterna (på iPhone: stäng appen helt, eller ta bort och lägg till på hemskärmen igen).
-- **Backend** (Edge Functions): distribueras separat till Supabase och slår igenom direkt.
+- **Frontend** (the files in this repo): upload changed files to GitHub. Since a service worker caches the files, a hard reload may be needed on devices (on iPhone: close the app completely, or remove and re-add it to the home screen).
+- **Backend** (Edge Functions): deployed separately to Supabase and takes effect immediately.
 
-## Datakälla och förbehåll
+## Data source and caveats
 
-Avgångs- och förseningsdata kommer från Trafikverkets öppna API. Spårnummer kan ändras med kort varsel, särskilt för pendel- och regionaltåg; perrong-påminnelsen visar senast kända spår och kompletteras av en separat spårändrings-notis om spåret ändras innan avgång.
+Departure and delay data comes from Trafikverket's open API. Track numbers can change at short notice, especially for commuter and regional trains; the platform reminder shows the last known track and is complemented by a separate track-change notification if the track changes before departure.
 
-## Snabbåtkomst
+## Quick access
 
-Skanna QR-koden med mobilkameran för att öppna appen:
+Scan the QR code with your phone's camera to open the app:
 
-<img src="tagtavlan-qr.png" alt="QR-kod till Tågtavlan" width="180">
+<img src="tagtavlan-qr.png" alt="QR code for Tågtavlan" width="180">
 
 `https://im4fun.github.io/tagtavlan/`
