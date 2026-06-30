@@ -124,7 +124,7 @@ window.TT_CONFIG = {
 
 Upload the frontend files to GitHub Pages (or any static host) — `index.html`, `app.js`, `config.js`, `sw.js`, `manifest.json`, and the two icons must all be in the same directory. Share the URL with your team.
 
-The app includes a Service Worker that caches resources automatically. When you upload a new version, users receive the update the next time they close and reopen the app — no reinstallation needed.
+The app includes a Service Worker that caches resources and handles updates automatically. When you upload a new version, users receive the update the next time they close and reopen the app — no need to remove and re-add it to the home screen. For a forced clean update across all devices, bump `CACHE_VERSION` at the top of `sw.js`.
 
 ---
 
