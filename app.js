@@ -1,6 +1,10 @@
+// =====================================================================
+//  TÅGTAVLAN – klientlogik
+// =====================================================================
 const CFG = window.TT_CONFIG;
 const FN = (name) => `${CFG.SUPABASE_URL}/functions/v1/${name}`;
 
+// Anropar en Edge Function. anon-nyckeln krävs av Supabase-gatewayen.
 async function call(fn, payload) {
   const res = await fetch(FN(fn), {
     method: "POST",
@@ -15,6 +19,7 @@ async function call(fn, payload) {
   return data;
 }
 
+// Enkel state, mestadels i minnet. deviceId + val sparas lokalt.
 const State = {
   from: null,   // {signature, name}
   to: null,
@@ -114,6 +119,10 @@ const App = {
     box.innerHTML = State.board.map((d) => {
       const dest = d.to[d.to.length - 1] || "—";
       const via = d.to.length > 1 ? `via ${d.to.slice(0, -1).join(", ")}` : "";
+      // Genomfartståg: destinationen du valde ligger på vägen mot ett tåg
+      // som fortsätter bortom den. Visa det tydligt.
+      const through = d.viaDestination && d.viaDestination !== dest
+        ? `<span class="badge via">Stannar i ${d.viaDestination}</span>` : "";
       let timeHtml, badge = "";
       if (d.canceled) {
         timeHtml = `<div class="t strike">${hhmm(d.advertisedTime)}</div>`;
@@ -130,7 +139,7 @@ const App = {
         <div class="dep-mid">
           <div class="dep-dest">${dest}</div>
           <div class="dep-sub">Tåg ${d.train}${via ? " · " + via : ""}</div>
-          ${badge}
+          ${through}${badge}
         </div>
         <div class="dep-track mono">${d.track || "–"}</div>
         <button class="watch-btn ${on ? "on" : ""}" onclick='App.openWatch(${JSON.stringify(JSON.stringify(d))})'>${on ? "✓" : "🔔"}</button>
@@ -280,6 +289,7 @@ const App = {
     this.setTheme(localStorage.getItem("tt_theme") || "");
     this.setupSearch("fromInput", "fromSug", "from");
     this.setupSearch("toInput", "toSug", "to");
+    // Förladda bevakningar så att klock-ikoner stämmer
     if (State.deviceId) {
       call("subscribe", { action: "getState", deviceId: State.deviceId })
         .then(({ watches }) => { State.watches = watches; })
