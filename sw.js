@@ -1,6 +1,6 @@
 // Service worker: cachning med automatisk uppdatering + push-notiser.
 // Höj CACHE_VERSION vid varje ny version för att tvinga fram en ren uppdatering.
-const CACHE_VERSION = "tagtavlan-v1.1";
+const CACHE_VERSION = "tagtavlan-v1.2";
 const ASSETS = [
   "./",
   "./index.html",
