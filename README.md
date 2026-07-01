@@ -8,6 +8,8 @@ A mobile-first web app for live train departures, watching individual departures
 
 - **Live departure board** — time, train number, track, and destination, straight from Trafikverket
 - **Station search** with an optional destination filter (e.g. only trains from Stockholm C towards Uppsala)
+- **Through-trains included** — when a destination is chosen, trains that merely pass through it are also shown (e.g. a Norrköping → Gävle train that stops at Stockholm on the way), marked "Stannar i …" so it's clear you get off en route
+- **Estimated arrival time** at the chosen destination, delay-adjusted, shown on each departure
 - **Delays and cancellations** shown clearly with struck-through scheduled time, new estimated time, and a status badge
 - **Watch individual departures** with two notification types:
   * *Disruptions* — delay, track change, or cancellation
@@ -150,6 +152,8 @@ Push notifications on iPhone only work when the app is launched from the home sc
 ## Data Source and Caveats
 
 Departure and delay data comes from Trafikverket's open API. Track numbers can change at short notice, especially for commuter and regional trains; the platform reminder shows the last known track and is complemented by a separate track-change notification if the track changes before departure.
+
+Through-trains and arrival times are derived by cross-referencing departures from the origin station against arrivals at the chosen destination (matched by train number and time order), within a 10-hour window. This covers virtually all normal journeys; arrival times are delay-adjusted where an estimate is available.
 
 ---
 
