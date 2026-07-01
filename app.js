@@ -119,10 +119,16 @@ const App = {
     box.innerHTML = State.board.map((d) => {
       const dest = d.to[d.to.length - 1] || "—";
       const via = d.to.length > 1 ? `via ${d.to.slice(0, -1).join(", ")}` : "";
-      // Genomfartståg: destinationen du valde ligger på vägen mot ett tåg
-      // som fortsätter bortom den. Visa det tydligt.
-      const through = d.viaDestination && d.viaDestination !== dest
-        ? `<span class="badge via">Stannar i ${d.viaDestination}</span>` : "";
+      // Om en destination valts visas beräknad ankomsttid dit. För
+      // genomfartståg (tåget fortsätter bortom destinationen) skrivs även
+      // "Stannar i" ut så det syns att man ska av på vägen.
+      let through = "";
+      if (d.viaDestination && d.destinationArrival) {
+        const arr = hhmm(d.destinationArrival);
+        through = d.viaDestination !== dest
+          ? `<span class="badge via">Stannar i ${d.viaDestination} · ank ${arr}</span>`
+          : `<span class="badge via">Ank ${d.viaDestination} ${arr}</span>`;
+      }
       let timeHtml, badge = "";
       if (d.canceled) {
         timeHtml = `<div class="t strike">${hhmm(d.advertisedTime)}</div>`;
